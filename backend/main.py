@@ -880,6 +880,21 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg"):
                     return (str(text)[:500], [])
             except Exception as e:
                 if any(k in str(e).lower() for k in ('quota','429','rate limit')): time.sleep(1*(2**attempt)); continue
+    # Groq fallback (free tier) when Gemini fully exhausted
+    try:
+        groq_key = os.environ.get("GROQ_API_KEY", "")
+        groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+        if groq_key:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            payload = {"model": groq_model, "messages": [{"role":"user","content":str(user_message)}], "max_tokens": 2048}
+            r = requests.post(url, headers={"Authorization": f"Bearer {groq_key}", "Content-Type":"application/json"}, json=payload, timeout=60)
+            if r.status_code == 200:
+                d = r.json()
+                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                print(f"[ANSWERED] provider=Groq model={groq_model} msg={str(user_message)[:20]}", flush=True)
+                return (str(text)[:500], [])
+    except Exception:
+        pass
     return ("Gemini busy right now. Try again shortly.", [])
 
 # ---------------------------------------------------------------------------
