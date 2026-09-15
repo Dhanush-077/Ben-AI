@@ -1,0 +1,6 @@
+# Secrets — never commit real credentials.
+.env
+# venv's own .gitignore lives inside venv/ and ignores its contents.
+venv/
+__pycache__/
+*.pyc

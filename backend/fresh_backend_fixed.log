@@ -1,0 +1,88 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\janak\\OneDrive\\Desktop\\ben-ai-chatbot\\ben-ai-chatbot\\backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15596] using WatchFiles
+INFO:     Started server process [17492]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58608 - "POST /chat HTTP/1.1" 401 Unauthorized
+INFO:     127.0.0.1:57259 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56348 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57259 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62297 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56348 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57259 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62297 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62013 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57259 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57259 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57259 - "GET /conversations HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+ INFO:     127.0.0.1:62587 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61503 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60156 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62587 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60156 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61503 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57143 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62587 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62587 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52570 - "OPTIONS /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52570 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52570 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63856 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63856 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64810 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "OPTIONS /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "OPTIONS /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64810 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "GET /profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61135 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50570 - "OPTIONS /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50570 - "POST /chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50570 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /history?conversation_id=71 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /history?conversation_id=71 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/71 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/71 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /history?conversation_id=69 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /history?conversation_id=69 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/69 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/69 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/73 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/73 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/74 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/74 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/72 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/72 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /history?conversation_id=75 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /history?conversation_id=75 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/75 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/75 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /history?conversation_id=77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /history?conversation_id=77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "OPTIONS /conversations/77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "DELETE /conversations/77 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "POST /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60752 - "GET /conversations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55577 - "OPTIONS /history?conversation_id=88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55577 - "GET /history?conversation_id=88 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61383 - "OPTIONS /history?conversation_id=89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61383 - "GET /history?conversation_id=89 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61383 - "OPTIONS /history?conversation_id=76 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61383 - "GET /history?conversation_id=76 HTTP/1.1" 200 OK

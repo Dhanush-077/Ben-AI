@@ -1,0 +1,12 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="240" height="240" rx="36" fill="#0B0C0E"/>
+
+  <!-- Monogram B -->
+  <text x="112" y="172" font-family="Helvetica Neue, Arial, sans-serif" font-weight="800"
+        font-size="152" fill="#F4F3EF" text-anchor="middle">B</text>
+
+  <!-- Accent node: subtle "AI signal" mark integrated into the letterform -->
+  <circle cx="168" cy="76" r="9" fill="#4FD1C5"/>
+  <path d="M 152 92 L 163 82" stroke="#4FD1C5" stroke-width="4" stroke-linecap="round"/>
+</svg>
