@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu, X } from "lucide-react";
 import { useAuth } from "./useAuth";
 import { useChatSession } from "./useChatSession";
 import { useTheme } from "./useTheme";
@@ -9,6 +9,7 @@ import DeveloperFooter from "./DeveloperFooter";
 import MarkdownMessage from "./MarkdownMessage";
 import ImageStrip from "./ImageStrip";
 import ConversationsSidebar from "./ConversationsSidebar";
+import ProfileModal from "./ProfileModal";
 
 export default function App() {
   const auth = useAuth();
@@ -18,8 +19,73 @@ export default function App() {
   const [listening, setListening] = useState(false);
   const [toast, setToast] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingImage, setPendingImage] = useState(null); // Issue 5: inline image preview
+  const [profileOpen, setProfileOpen] = useState(false); // Issue 7
+  const [lightboxImage, setLightboxImage] = useState(null); // Click to view uploaded image full size
+  const [profile, setProfile] = useState(() => {
+    // Read from localStorage first for instant display on re-login.
+    try {
+      const cached = JSON.parse(localStorage.getItem("ben_ai_profile") || "{}");
+      return { displayName: cached.displayName || "", avatarUrl: cached.avatarUrl || "" };
+    } catch { return { displayName: "", avatarUrl: "" }; }
+  }); // Issue 7
   const toastTimer = useRef(null);
   const scrollRef = useRef(null);
+  const imageInputRef = useRef(null);
+
+  // Close lightbox on Escape key
+  useEffect(() => {
+    if (!lightboxImage) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setLightboxImage(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxImage]);
+
+  // Fetch user profile on login — localStorage first, then backend update (Issue 7).
+  useEffect(() => {
+    if (!auth.token) return;
+    (async () => {
+      try {
+        const res = await fetch(`${auth.API_BASE}/profile`, {
+          headers: { Authorization: `Bearer ${auth.token}` },
+        });
+        const data = await res.json();
+        const displayName = data.display_name || "";
+        const avatarUrl = data.avatar_url || "";
+        setProfile({ displayName, avatarUrl });
+        // Cache in localStorage so it persists even if the backend table is missing.
+        localStorage.setItem("ben_ai_profile", JSON.stringify({ displayName, avatarUrl }));
+      } catch {
+        /* profile is optional — localStorage cache is already loaded */
+      }
+    })();
+  }, [auth.token, auth.API_BASE]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save profile to backend + localStorage (Issue 7). Verifies the backend
+  // actually accepted it before showing the success toast — previously the
+  // response was ignored, so a failed save still looked "saved" (and the name
+  // silently reverted on next login / reload).
+  const handleProfileSave = useCallback(async ({ displayName, avatarUrl }) => {
+    const res = await fetch(`${auth.API_BASE}/profile`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${auth.token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ display_name: displayName, avatar_url: avatarUrl }),
+    });
+    if (!res.ok) {
+      let detail = "";
+      try {
+        detail = (await res.json()).detail || "";
+      } catch {
+        /* non-JSON error body */
+      }
+      throw new Error(detail || `Profile save failed (HTTP ${res.status})`);
+    }
+    setProfile({ displayName, avatarUrl });
+    localStorage.setItem("ben_ai_profile", JSON.stringify({ displayName, avatarUrl }));
+    showToast("Profile saved!");
+  }, [auth.token, auth.API_BASE]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,39 +123,102 @@ export default function App() {
     return <Login auth={auth} />;
   }
 
+  // Show a loading screen while the OAuth token exchange completes (Issue 1).
+  if (auth.oauthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-stone-950">
+        <p className="text-sm text-stone-400 dark:text-stone-500 animate-pulse">Verifying your login…</p>
+      </div>
+    );
+  }
+
+  // Determine the greeting name: custom display name or email prefix.
+  const greetingName = profile.displayName || auth.email.split("@")[0];
+
+  // --- Send: text only, or text + pending image (Issue 5) ---
   function handleSend() {
-    if (!input.trim()) return;
-    session.sendMessage(input.trim());
+    const text = input.trim();
+    if (!text && !pendingImage) return;
+    const message = text || "What is this?";
+
+    if (pendingImage) {
+      session.sendImage(message, pendingImage.file);
+      setPendingImage(null);
+    } else {
+      session.sendMessage(message);
+    }
     setInput("");
   }
 
+  // --- Voice input (Issue 6): proper error handling + interim results ---
   function handleVoiceInput() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Voice input isn't supported in this browser — try Chrome.");
+      showToast("Voice input isn't supported in this browser — try Chrome.");
       return;
     }
+
     const recognition = new SpeechRecognition();
     recognition.lang = "en-IN";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
     recognition.onstart = () => setListening(true);
-    recognition.onend = () => setListening(false);
+
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
       setInput(transcript);
     };
-    recognition.start();
+
+    recognition.onerror = (event) => {
+      setListening(false);
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        showToast("Microphone permission denied — please allow microphone access in your browser settings.");
+      } else if (event.error === "no-speech") {
+        showToast("No speech detected — try again.");
+      } else if (event.error === "network") {
+        showToast("Voice recognition requires an internet connection.");
+      } else {
+        showToast("Voice input failed — try again.");
+      }
+    };
+
+    recognition.onend = () => setListening(false);
+
+    try {
+      recognition.start();
+    } catch {
+      showToast("Could not start voice input — try refreshing the page.");
+    }
   }
 
-  async function handleImageUpload(e) {
+  // --- Image upload (Issue 5): inline preview instead of prompt() ---
+  function handleImageSelect(e) {
     const file = e.target.files[0];
     if (!file) return;
-    const question = prompt("What do you want to ask about this image?") || "What is this?";
-    await session.sendImage(question, file);
-    e.target.value = ""; // allow re-selecting the same file next time
+    if (file.size > 8 * 1024 * 1024) {
+      showToast("Image must be under 8 MB.");
+      e.target.value = "";
+      return;
+    }
+    setPendingImage({
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name,
+    });
+    e.target.value = ""; // allow re-selecting the same file
+  }
+
+  function removePendingImage() {
+    if (pendingImage?.preview) URL.revokeObjectURL(pendingImage.preview);
+    setPendingImage(null);
   }
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-stone-950 transition-colors">
+    <div className="h-screen overflow-hidden flex bg-white dark:bg-stone-950 transition-colors">
       <ConversationsSidebar
         conversations={session.conversations}
         currentId={session.currentId}
@@ -100,12 +229,13 @@ export default function App() {
         }}
         onRename={session.renameConversation}
         onTogglePin={session.togglePin}
+        onDelete={session.deleteConversation}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
-        userName={auth.email}
+        userName={profile.displayName || auth.email}
       />
 
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
         {/* Top bar */}
         <header className="flex items-center justify-between px-5 py-3 border-b border-stone-100 dark:border-stone-800">
           <div className="flex items-center gap-2">
@@ -129,6 +259,22 @@ export default function App() {
             >
               {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
             </button>
+
+            {/* Issue 7: Profile button */}
+            <button
+              onClick={() => setProfileOpen(true)}
+              aria-label="Edit profile"
+              className="w-8 h-8 rounded-full overflow-hidden bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-stone-500 dark:text-stone-400 hover:ring-2 hover:ring-stone-300 dark:hover:ring-stone-600 transition-all"
+            >
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-sm font-semibold">
+                  {(profile.displayName || auth.email).charAt(0).toUpperCase()}
+                </span>
+              )}
+            </button>
+
             <button
               onClick={auth.logout}
               className="text-sm text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200"
@@ -156,7 +302,7 @@ export default function App() {
           {session.loading ? (
             <p className="text-center text-sm text-stone-400 dark:text-stone-500 mt-10">Loading your history…</p>
           ) : session.messages.length === 0 ? (
-            <Greeting userName={auth.email.split("@")[0]} />
+            <Greeting userName={greetingName} />
           ) : (
             <div className="max-w-2xl mx-auto py-4 space-y-4">
               {session.messages.map((m, i) => (
@@ -175,7 +321,9 @@ export default function App() {
                         <img
                           src={m.image_url}
                           alt="Uploaded"
-                          className="max-w-[240px] rounded-lg my-1 border border-black/10 dark:border-white/20"
+                          onClick={() => setLightboxImage(m.image_url)}
+                          title="Click to view full size"
+                          className="max-w-[240px] rounded-lg my-1 border border-black/10 dark:border-white/20 cursor-pointer hover:opacity-90 transition-opacity"
                         />
                       )}
                       {m.role === "assistant"
@@ -212,12 +360,33 @@ export default function App() {
           )}
         </main>
 
+        {/* Issue 5: Pending image preview chip */}
+        {pendingImage && (
+          <div className="px-5 pb-1">
+            <div className="max-w-2xl mx-auto flex items-center gap-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2">
+              <img
+                src={pendingImage.preview}
+                alt="Selected"
+                className="w-12 h-12 rounded-lg object-cover"
+              />
+              <span className="text-xs text-stone-500 dark:text-stone-400 truncate flex-1">{pendingImage.name}</span>
+              <button
+                onClick={removePendingImage}
+                className="text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200"
+                aria-label="Remove image"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Input bar */}
         <div className="border-t border-stone-100 dark:border-stone-800 px-5 py-3">
           <div className="max-w-2xl mx-auto flex items-center gap-2">
             <label className="cursor-pointer text-stone-400 hover:text-stone-700 dark:text-stone-500 dark:hover:text-stone-200">
               <ImageIcon size={20} />
-              <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} ref={imageInputRef} />
             </label>
             <button
               onClick={handleVoiceInput}
@@ -232,7 +401,7 @@ export default function App() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Ask anything…"
+                placeholder={pendingImage ? "Add a message about this image…" : "Ask anything…"}
                 className={`w-full border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-800 dark:focus:ring-stone-300 ${listening ? "pl-10" : ""}`}
               />
               {listening && (
@@ -268,6 +437,43 @@ export default function App() {
           </div>
         )}
       </div>
+
+      {/* Issue 7: Profile modal */}
+      <ProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        profile={profile}
+        onSave={handleProfileSave}
+        token={auth.token}
+        API_BASE={auth.API_BASE}
+      />
+
+      {/* Full size lightbox modal for uploaded images */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div
+            className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setLightboxImage(null)}
+              aria-label="Close image preview"
+              title="Close (Esc)"
+              className="absolute -top-10 right-0 p-1.5 text-white/80 hover:text-white rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+            >
+              <X size={22} />
+            </button>
+            <img
+              src={lightboxImage}
+              alt="Full size preview"
+              className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

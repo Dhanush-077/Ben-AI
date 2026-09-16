@@ -14,6 +14,27 @@ export function useChatSession(token, API_BASE) {
 
   const authHeaders = { Authorization: `Bearer ${token}` };
 
+  // Free AI models intermittently stall for a minute or more, and the backend
+  // has to exhaust several fallback models before giving up. Without a timeout
+  // the chat bubble sits on "thinking…" for minutes or forever. Abort after a
+  // generous window so the user always gets SOME reply quickly.
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 90000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function networkErrorMsg(err) {
+    if (err?.name === "AbortError") {
+      return "⚠️ The AI took too long to respond — please try again in a moment.";
+    }
+    return "⚠️ Could not reach the server — please check your connection and try again.";
+  }
+
   const loadConversations = useCallback(async () => {
     if (!token) return;
     try {
@@ -25,8 +46,9 @@ export function useChatSession(token, API_BASE) {
     }
   }, [token, API_BASE]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // On login: load the list; open the most recent conversation if there is one,
-  // otherwise create the first one so the user can type immediately.
+  // On login: load the conversation list for the sidebar, then always create
+  // a fresh empty chat so the user starts with a blank slate. Previous chats
+  // remain accessible via the sidebar.
   useEffect(() => {
     if (!token) {
       setMessages([]);
@@ -39,32 +61,22 @@ export function useChatSession(token, API_BASE) {
     (async () => {
       setLoading(true);
       try {
+        // Load existing conversations for the sidebar.
         const res = await fetch(`${API_BASE}/conversations`, { headers: authHeaders });
         const data = await res.json();
         if (cancelled) return;
-        const list = data.conversations || [];
-        setConversations(list);
+        setConversations(data.conversations || []);
 
-        if (list.length > 0) {
-          const first = list[0];
-          setCurrentId(first.id);
-          const hres = await fetch(`${API_BASE}/history?conversation_id=${first.id}`, { headers: authHeaders });
-          const hdata = await hres.json();
-          if (!cancelled) {
-            setMessages(hdata.messages || []);
-            setLoading(false);
-          }
-        } else {
-          const cres = await fetch(`${API_BASE}/conversations`, {
-            method: "POST",
-            headers: authHeaders,
-          });
-          const cdata = await cres.json();
-          if (!cancelled) {
-            setCurrentId(cdata.conversation_id);
-            setMessages([]);
-            setLoading(false);
-          }
+        // Always create a new conversation so the chat starts fresh.
+        const cres = await fetch(`${API_BASE}/conversations`, {
+          method: "POST",
+          headers: authHeaders,
+        });
+        const cdata = await cres.json();
+        if (!cancelled) {
+          setCurrentId(cdata.conversation_id);
+          setMessages([]);
+          setLoading(false);
         }
       } catch {
         if (!cancelled) setLoading(false);
@@ -114,7 +126,7 @@ export function useChatSession(token, API_BASE) {
     setMessages((prev) => [...prev, { role: "user", content: text, created_at: new Date().toISOString() }]);
     setSending(true);
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetchWithTimeout(`${API_BASE}/chat`, {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, conversation_id: id }),
@@ -122,8 +134,13 @@ export function useChatSession(token, API_BASE) {
       const data = await res.json();
       if (data.reply) {
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply, images: data.images || [], created_at: new Date().toISOString() }]);
+      } else if (data.detail) {
+        // Show the error as an assistant message so the user knows what happened.
+        setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${data.detail}`, created_at: new Date().toISOString() }]);
       }
       await loadConversations(); // pick up the auto-generated title on chat 1
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: "assistant", content: networkErrorMsg(err), created_at: new Date().toISOString() }]);
     } finally {
       setSending(false);
     }
@@ -139,7 +156,7 @@ export function useChatSession(token, API_BASE) {
       formData.append("conversation_id", String(id));
       formData.append("image", file);
 
-      const res = await fetch(`${API_BASE}/chat-with-image`, {
+      const res = await fetchWithTimeout(`${API_BASE}/chat-with-image`, {
         method: "POST",
         headers: authHeaders,
         body: formData,
@@ -155,8 +172,12 @@ export function useChatSession(token, API_BASE) {
       }
       if (data.reply) {
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply, images: data.images || [], created_at: new Date().toISOString() }]);
+      } else if (data.detail) {
+        setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${data.detail}`, created_at: new Date().toISOString() }]);
       }
       await loadConversations();
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: "assistant", content: networkErrorMsg(err), created_at: new Date().toISOString() }]);
     } finally {
       setSending(false);
     }
@@ -181,6 +202,18 @@ export function useChatSession(token, API_BASE) {
     await loadConversations();
   }
 
+  async function deleteConversation(id) {
+    await fetch(`${API_BASE}/conversations/${id}`, {
+      method: "DELETE",
+      headers: authHeaders,
+    });
+    // If the deleted conversation was the active one, switch to a new chat.
+    if (id === currentId) {
+      await newConversation();
+    }
+    await loadConversations();
+  }
+
   return {
     messages,
     loading,
@@ -194,5 +227,6 @@ export function useChatSession(token, API_BASE) {
     sendImage,
     renameConversation,
     togglePin,
+    deleteConversation,
   };
 }

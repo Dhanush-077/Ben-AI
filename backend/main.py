@@ -347,6 +347,11 @@ Always format code using markdown triple-backtick code fences with the language
 specified (for example ```javascript, ```java, ```python). Use headings, bullet
 lists, and other markdown formatting freely so your replies render cleanly.
 
+Always give complete, thorough answers — don't cut explanations short.
+When you provide code, always explain what the code does, how it works
+line-by-line or in logical sections, and how to run it — don't just paste
+code with no explanation.
+
 If the user asks — in any language or phrasing — who created you, built you, developed you,
 or made you, or asks about your developer, creator, or maker (e.g. "who built you",
 "who developed you", "who made you", "who is your developer", "నిన్ను ఎవరు తయారు చేశారు",
@@ -358,7 +363,7 @@ intro, then a bullet list of 2-3 standout projects, then the links below as mark
 - Standout projects: a Virtual Keyboard & Air Mouse System (Python, OpenCV, MediaPipe),
   a Tropical Cloud Cluster Detection model, and a Gesture Control Presenter.
 - Format the links exactly like this, each on its own line:
-  [GitHub](https://github.com/Dhanush-077)
+  [GitHub]()
   [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty)
   [View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)
 
@@ -855,20 +860,249 @@ TOOL_FUNCTIONS = {
 
 
 def _generate_title(user_message: str) -> str:
+    # 2. CONVERSATION TITLES: 1-2 words only
+    # (prompt below changed in SYSTEM_PROMPT; this is the backend call)
     return "New chat"
 
+import re as _re
+
+_SELF_IDENTITY_EN = (
+    "I'm Ben AI, an AI-powered assistant built by Janakisetty Dhanush Babu. "
+    "I help with coding, AI, career guidance, projects, and everyday questions.\n\n"
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "I'm **Janakisetty Dhanush Babu** — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. Passionate about AI, computer vision, and full-stack development.\n\n"
+    "**Contact:** janakisettydhanushbabu333@gmail.com | +91-9059672119\n\n"
+    "**Skills:** Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack development.\n\n"
+    "**Projects:** Virtual Keyboard & Air Mouse System · Tropical Cloud Cluster Detection · Gesture Control Presenter\n\n"
+    "**Connect:** [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) · [View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)"
+)
+
+_SELF_IDENTITY_TE = (
+    "నేను Ben AI, Janakisetty Dhanush Babu చేత built AI assistant. Coding, AI, career guidance, projects తో help చేస్తyorum.\n\n"
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "**Contact:** janakisettydhanushbabu333@gmail.com | +91-9059672119\n\n"
+    "**Skills / Projects / Connect:** same profile — see English above."
+)
+
+_SELF_IDENTITY_HI = (
+    "मैं Ben AI हूँ — Janakisetty Dhanush Babu द्वारा बनाया गया AI assistant. Coding, AI, career, projects में मदद करता हूँ।\n\n"
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "**Contact:** janakisettydhanushbabu333@gmail.com | +91-9059672119\n\n"
+    "**Skills / Projects / Connect:** same profile — see English above."
+)
+
+_PRODUCT_IDENTITY_EN = (
+    "Ben AI is an AI-powered assistant created by Janakisetty Dhanush Babu. "
+    "It helps with programming, AI, projects, career guidance, and general "
+    "conversations using Gemini while maintaining its own Ben AI identity.\n\n"
+    "**Founder:** Janakisetty Dhanush Babu\n"
+    "**Skills:** Python, Java, HTML, CSS, MySQL, ML, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack\n"
+    "**Featured Projects:** Virtual Keyboard & Air Mouse System · Tropical Cloud Cluster Detection · Gesture Control Presenter\n"
+    "\n"
+    "**LinkedIn:** https://linkedin.com/in/dhanushbabujanakisetty\n"
+    "**Resume:** https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing"
+)
+
+_DEV_NAME_PATTERN = _re.compile(
+    r'(who\s+(built|made|created|developed)\s+(you|ben\s*ai)|'
+    r'founder\s+of\s+ben\s*ai|who\s+is\s+ben\s*ai|'
+    r'janakisetty\s+dhanush\s+babu|dhanush\s+babu\s+janakisetty)',
+    _re.IGNORECASE
+)
+
+_DEV_RESPONSE_EN = (
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "I'm **Janakisetty Dhanush Babu**, a B.Tech CSE (3rd Year) student at "
+    "PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, "
+    "A.P. I'm passionate about AI, computer vision, and full-stack "
+    "development — I built Ben AI as my mini-project.\n\n"
+    "**Contact:**\n"
+    "📧 janakisettydhanushbabu333@gmail.com\n"
+    "📱 +91-9059672119\n\n"
+    "**Projects I've built:**\n"
+    "- Virtual Keyboard & Air Mouse System — touchless computer control "
+    "using Python, OpenCV, and MediaPipe\n"
+    "- Tropical Cloud Cluster Detection — a deep learning model that "
+    "identifies tropical cloud clusters from satellite imagery\n"
+    "- Gesture Control Presenter — controls Google Slides using hand "
+    "gestures via computer vision\n\n"
+    "**Connect with me:**\n"
+    "[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) · "
+    "[View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)"
+)
+
+_DEV_RESPONSE_TE = (
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "నేను **జానকisetty ధनush Babु**, PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. లో B.Tech CSE 3వ సంవత్సరం ఎ student. AI, computer vision, full-stack development — Ben AI ని నా mini-project గానే తయaru chedi.\n\n"
+    "**Contact:**\n"
+    "📧 janakisettydhanushbabu333@gmail.com\n"
+    "📱 +91-9059672119\n\n"
+    "**Projects:**\n"
+    "- Virtual Keyboard & Air Mouse System\n"
+    "- Tropical Cloud Cluster Detection\n"
+    "- Gesture Control Presenter\n\n"
+    "**Connect:**\n"
+    "[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) · [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)"
+)
+
+_DEV_RESPONSE_HI = (
+    "![Developer Photo](/developer-photo.jpeg)\n\n"
+    "मैं **Janakisetty Dhanush Babu** हूँ, B.Tech CSE 3rd Year, PBR Visvodaya Institute, Kavali, Nellore. AI, computer vision, full-stack — Ben AI मेरा mini-project.\n\n"
+    "**Contact:**\n"
+    "📧 janakisettydhanushbabu333@gmail.com\n"
+    "📱 +91-9059672119\n\n"
+    "**Projects:**\n"
+    "- Virtual Keyboard & Air Mouse\n"
+    "- Tropical Cloud Cluster Detection\n"
+    "- Gesture Control Presenter\n\n"
+    "**Connect:**\n"
+    "[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) · [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)"
+)
+
+def _normalize_message(message: str) -> str:
+    msg = str(message).lower()
+    msg = msg.replace('?', '').replace('!', '').replace('.', '').replace(',', '').replace("'", '').replace('"', '')
+    msg = msg.replace('  ', ' ').strip()
+    return msg
+
+def _detect_self_identity(message: str):
+    if not message:
+        return None
+    msg_norm = _normalize_message(message)
+    exact_self = [
+        'what is your name', 'whats your name', 'what is ur name', 'what is u r name', 'whats ur name', 'whats u r name',
+        'who are you', 'what are you',
+        'who built you', 'who built u', 'who created you', 'who created u',
+        'who developed you', 'who developed u', 'who dveloped you', 'who dveloped u',
+        'who made you', 'who made u', 'who owns you', 'who is your developer',
+    ]
+    if msg_norm in exact_self:
+        msg = str(message)
+        if any('ఀ' <= ch <= '౿' for ch in msg):
+            return _SELF_IDENTITY_TE
+        if any('ऀ' <= ch <= 'ॿ' for ch in msg):
+            return _SELF_IDENTITY_HI
+        return _SELF_IDENTITY_EN
+    # Telugu / Hindi script detection on original (before normalization stripped script-sensitive chars too aggressively)
+    msg_raw = str(message)
+    # Telugu: contains Telugu script characters
+    if any('అ' <= ch <= 'హ' for ch in msg_raw):
+        return _SELF_IDENTITY_TE
+    # Hindi: contains Devanagari script characters
+    if any('अ' <= ch <= 'ह' for ch in msg_raw):
+        return _SELF_IDENTITY_HI
+    # Fallback regex
+    msg_low = str(message).lower()
+    self_patterns = [
+        r'who\s+(are|is)\s+you', r'what\s+(is\s+your|are\s+your)\s+name',
+        r'whats\s+your\s+name', r'what\s+are\s+you',
+        r'who\s+built\s+you', r'who\s+created\s+you', r'who\s+developed\s+you',
+        r'who\s+made\s+you', r'who\s+owns\s+you', r'who\s+is\s+your\s+developer',
+    ]
+    for p in self_patterns:
+        if _re.search(p, msg_low, _re.IGNORECASE):
+            if any('అ' <= ch <= 'హ' for ch in msg_raw):
+                return _SELF_IDENTITY_TE
+            if any('अ' <= ch <= 'ह' for ch in msg_raw):
+                return _SELF_IDENTITY_HI
+            return _SELF_IDENTITY_EN
+    # Fuzzy fallback: message contains "who" + ("you" or "u") + developer keyword with common typos
+    msg_raw_low = str(message).lower()
+    if 'who' in msg_raw_low and ('you' in msg_raw_low or msg_raw_low.endswith(' u') or ' u ' in msg_raw_low or msg_raw_low == 'who build u' or msg_raw_low == 'who build u?'):
+        dev_keywords = ["build", "built", "create", "created", "develop", "dvelop", "dveloped", "developd", "made"]
+        if any(k in msg_raw_low for k in dev_keywords) or msg_raw_low in ('who build u', 'who build u?'):
+            msg = str(message)
+            if any('ఀ' <= ch <= '౿' for ch in msg):
+                return _SELF_IDENTITY_TE
+            if any('अ' <= ch <= 'ह' for ch in msg):
+                return _SELF_IDENTITY_HI
+            return _SELF_IDENTITY_EN
+    return None
+def _detect_product_identity(message: str):
+    if not message:
+        return None
+    msg_norm = _normalize_message(message)
+    exact_product = [
+        'what is ben ai', 'who is ben ai',
+        'tell me about ben ai', 'explain ben ai',
+    ]
+    if msg_norm in exact_product:
+        return _PRODUCT_IDENTITY_EN
+    msg_low = str(message).lower()
+    product_patterns = [
+        r'what\s+is\s+ben\s+ai', r'who\s+is\s+ben\s+ai',
+        r'tell\s+me\s+about\s+ben\s+ai', r'explain\s+ben\s+ai',
+        r'what\s+is\s+this\s+assistant',
+    ]
+    for p in product_patterns:
+        if _re.search(p, msg_low, _re.IGNORECASE):
+            return _PRODUCT_IDENTITY_EN
+    return None
+
+def _detect_dev_question(message: str):
+    if not message:
+        return None
+    if _DEV_NAME_PATTERN.search(message):
+        if any('ఀ' <= ch <= '౿' for ch in message):
+            return _DEV_RESPONSE_TE
+        if any('ऀ' <= ch <= 'ॿ' for ch in message):
+            return _DEV_RESPONSE_HI
+        return _DEV_RESPONSE_EN
+    return None
+
 # Fallback + backoff replacement for run_chat
-def run_chat(user_message, image_base64=None, image_media_type="image/jpeg"):
-    dev = __import__('re').compile(r'who.*built').search(str(user_message) or '')
-    if dev: return ('Built response', [])
-    models = ["gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-3.6-flash"]
+def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", conversation_id=None):
+    # FIRST: identity detection in priority order (before history / model)
+    # 1. Self Identity
+    self_reply = _detect_self_identity(user_message)
+    if self_reply is not None:
+        return (self_reply, [])
+    # 2. Ben AI Product Identity
+    product_reply = _detect_product_identity(user_message)
+    if product_reply is not None:
+        return (product_reply, [])
+    # 3. Founder Profile (existing dev detection)
+    dev_reply = _detect_dev_question(user_message)
+    if dev_reply is not None:
+        return (dev_reply, [])
+    # Block politician hallucination: any mention of full name
+    msg_text_low = str(user_message or '').lower()
+    if 'janakisetty dhanush babu' in msg_text_low:
+        return (_DEV_RESPONSE_EN, [])
+    # Old regex backup (not needed with new pattern above but kept for compatibility)
+    dev = __import__('re').compile(r'who.*(built|created|developer|made)', re.IGNORECASE).search(str(user_message) or '')
+    if dev:
+        # Match input language; default English.
+        msg_text = str(user_message or '')
+        lang_tele = any(x in msg_text for x in ['నinnu', 'ఎవరు', 'న created'])
+        lang_hind = any(x in msg_text for x in ['तुम्हें', 'किसने', 'बनाया'])
+        if lang_tele:
+            return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nనన్నu Janakisetty Dhanush Babu — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology & Science, Kavali, Nellore. AI, computer vision, full-stack development pasión.\n\nContact: janakisettydhanushbabu333@gmail.com | +91-9012345678\n\nSkills: Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack.\n\nProjects:\n- Virtual Keyboard & Air Mouse System\n- Tropical Cloud Cluster Detection\n- Gesture Control Presenter\n\nYou can connect with him:\n[GitHub]() [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
+        if lang_hind:
+            return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nमैं Janakisetty Dhanush Babu हूँ — B.Tech CSE (3rd Year), PBR Visvodaya Institute. AI, computer vision, full-stack मैं passionate.\n\nContact: janakisettydhanushbabu333@gmail.com | +91-9012345678\n\nSkills: Python, Java, HTML, CSS, MySQL, ML, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack.\n\nProjects:\n- Virtual Keyboard & Air Mouse\n- Tropical Cloud Cluster Detection\n- Gesture Control Presenter\n\nYou can connect with him:\n[GitHub]() [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
+        return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nI'm **Janakisetty Dhanush Babu** — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. I'm passionate about AI, computer vision, and full-stack development.\n\n**Contact:** janakisettydhanushbabu333@gmail.com | +91-9012345678\n\n**Skills:** Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack development.\n\n**Standout projects:**\n- Virtual Keyboard & Air Mouse System (Python, OpenCV, MediaPipe)\n- Tropical Cloud Cluster Detection model\n- Gesture Control Presenter\n\n**You can connect with him:**\n[GitHub]()\n[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty)\n[View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
+    models = ["gemini-3.6-flash", "gemini-2.5-pro", "gemini-2.5-flash-preview-tts"]
     seen=set(); uniq=[m for m in models if m and not (m in seen or seen.add(m))]
     for model in uniq:
         url=f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={os.environ.get('GEMINI_API_KEY','')}"
         for attempt in range(3):
             import requests, time
             try:
-                payload={"contents":[{"role":"user","parts":[{"text":str(user_message)}]}],"system_instruction":{"parts":[{"text":"Be helpful and concise."}]},"generationConfig":{"temperature":0.7,"maxOutputTokens":2048}}
+                history_items = []
+                if conversation_id is not None:
+                    try:
+                        hist = load_history(conversation_id)
+                        for row in hist or []:
+                            mapped = "model" if row.get("role") == "assistant" else row.get("role")
+                            item = {"role": mapped, "parts": [{"text": row.get("content", "")}]}
+                            history_items.append(item)
+                    except Exception:
+                        pass
+                for item in history_items:
+                    pass  # history_items already built correctly above
+                # Build contents: previous messages + current user message
+                contents = history_items + [{"role":"user","parts":[{"text":str(user_message)}]}]
+                payload={"contents":contents,"system_instruction":{"parts":[{"text":"Be helpful and concise."}]},"generationConfig":{"temperature":0.7,"maxOutputTokens":2048}}
                 r=requests.post(url, headers={'Content-Type':'application/json'}, json=payload, timeout=60)
                 d=r.json()
                 is_429 = r.status_code==429 or any(k in str(d.get('error',{}).get('message','')).lower() for k in ('quota','429','rate limit'))
@@ -878,6 +1112,9 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg"):
                     text=d['candidates'][0].get('content',{}).get('parts',[{}])[0].get('text','')
                     print(f'[ANSWERED] model={model} msg={str(user_message)[:20]}', flush=True)
                     return (str(text)[:500], [])
+                if r.status_code==404:
+                    print(f'[FALLBACK-404] model={model} msg={str(user_message)[:20]}', flush=True)
+                    break  # try next model
             except Exception as e:
                 if any(k in str(e).lower() for k in ('quota','429','rate limit')): time.sleep(1*(2**attempt)); continue
     # Groq fallback (free tier) when Gemini fully exhausted
@@ -1063,7 +1300,7 @@ async def chat(req: ChatRequest, user=Depends(get_current_user)):
         update_conversation(req.conversation_id, user["user_id"], title=title)
 
     save_message(user["user_id"], "user", req.message, conversation_id=req.conversation_id)
-    reply, images = run_chat(req.message)
+    reply, images = run_chat(req.message, conversation_id=req.conversation_id)
     save_message(user["user_id"], "assistant", reply, conversation_id=req.conversation_id)
     return {"reply": reply, "conversation_id": req.conversation_id, "images": images}
 
@@ -1101,6 +1338,7 @@ async def chat_with_image(
         message,
         image_base64=image_base64,
         image_media_type=image.content_type or "image/jpeg",
+        conversation_id=conversation_id,
     )
     save_message(user["user_id"], "assistant", reply, conversation_id=conversation_id)
     return {
@@ -1112,4 +1350,3 @@ async def chat_with_image(
 @app.get("/")
 async def root():
     return {"status": "Chatbot backend is running"}
-

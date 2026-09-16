@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Plus, Pin, Pencil, X } from "lucide-react";
+import { Plus, Pin, Pencil, X, Trash2 } from "lucide-react";
 
 // Sidebar listing the user's conversations.
 //  - "+ New Chat" creates a fresh conversation
 //  - clicking a row opens that conversation's history
 //  - the pencil renames in place; the pin icon pins/unpins (pinned sorts first)
+//  - the trash icon deletes with confirmation
 // Works as a fixed sidebar on desktop and as an overlay drawer on mobile.
 export default function ConversationsSidebar({
   conversations,
@@ -13,6 +14,7 @@ export default function ConversationsSidebar({
   onNew,
   onRename,
   onTogglePin,
+  onDelete,
   open,
   onClose,
   userName,
@@ -124,6 +126,20 @@ export default function ConversationsSidebar({
                   className="shrink-0 text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                 >
                   <Pencil size={13} />
+                </button>
+
+                <button
+                  aria-label="Delete"
+                  title="Delete chat"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Delete "${conv.title}"? This cannot be undone.`)) {
+                      onDelete(conv.id);
+                    }
+                  }}
+                  className="shrink-0 text-stone-400 hover:text-red-500 dark:hover:text-red-400 opacity-60 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={13} />
                 </button>
               </div>
             );

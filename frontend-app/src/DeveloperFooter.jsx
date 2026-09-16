@@ -25,6 +25,7 @@ const RESUME_LINK = "https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf
 
 const DEVELOPER = {
   name: "Janakisetty Dhanush Babu",
+  photo: "/developer-photo.jpeg",
   role: "B.Tech CSE, 3rd Year — PBR Visvodaya Institute of Technology and Science",
   location: "Kavali, Nellore District, Andhra Pradesh",
   email: "janakisettydhanushbabu333@gmail.com",
@@ -45,7 +46,14 @@ export default function DeveloperFooter() {
     <>
       {/* Slim footer bar */}
       <footer className="w-full border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 px-4 py-2.5 flex items-center justify-between text-sm text-stone-500 dark:text-stone-400">
-        <span>Built by {DEVELOPER.name}</span>
+        <div className="flex items-center gap-2">
+          <img
+            src={DEVELOPER.photo}
+            alt={DEVELOPER.name}
+            className="w-6 h-6 rounded-full object-cover"
+          />
+          <span>Built by {DEVELOPER.name}</span>
+        </div>
         <button
           onClick={() => setOpen(true)}
           className="flex items-center gap-1.5 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white font-medium transition-colors"
@@ -73,8 +81,17 @@ export default function DeveloperFooter() {
               <X size={18} />
             </button>
 
-            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">{DEVELOPER.name}</h2>
-            <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">{DEVELOPER.role}</p>
+            <div className="flex items-center gap-3 mb-2">
+              <img
+                src={DEVELOPER.photo}
+                alt={DEVELOPER.name}
+                className="w-14 h-14 rounded-full object-cover"
+              />
+              <div>
+                <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-100">{DEVELOPER.name}</h2>
+                <p className="text-sm text-stone-500 dark:text-stone-400">{DEVELOPER.role}</p>
+              </div>
+            </div>
             <p className="text-sm text-stone-500 dark:text-stone-400">{DEVELOPER.location}</p>
 
             <div className="mt-4 space-y-1.5">
