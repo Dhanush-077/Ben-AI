@@ -28,8 +28,10 @@ export function useAuth() {
         if (user?.email) {
           saveSession({ token: session.access_token || session.refresh_token || "supabase", email: user.email });
         }
-        // Remove hash after session created.
-        if (window.location.hash && window.location.hash.includes("access_token")) {
+        // Remove hash after session created (only if OAuth redirect markers present).
+        const hasOAuthMarkers = (window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("code"))) ||
+                                (window.location.search && (window.location.search.includes("code=") || window.location.search.includes("access_token")));
+        if (hasOAuthMarkers && window.location.hash && window.location.hash.includes("access_token")) {
           window.history.replaceState({}, "", window.location.pathname + window.location.search);
           // Redirect to chat page when coming from OAuth.
           if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/chat")) {
@@ -46,8 +48,9 @@ export function useAuth() {
         if (user?.email) {
           saveSession({ token: session.access_token || session.refresh_token || "supabase", email: user.email });
         }
-        // Clear hash and redirect to chat.
-        if (window.location.hash && window.location.hash.includes("access_token")) {
+        // Clear hash and redirect to chat (only when actually OAuth redirect).
+        if ((window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("code"))) ||
+            (window.location.search && (window.location.search.includes("code=") || window.location.search.includes("access_token")))) {
           window.history.replaceState({}, "", window.location.pathname + window.location.search);
           if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/chat")) {
             window.location.replace(window.location.origin + "/");
@@ -65,38 +68,42 @@ export function useAuth() {
     return () => subscription?.unsubscribe();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // On mount: handle OAuth redirect with Supabase session (backward-compat).
+  // OAuth callback (manual exchange) — ONLY when URL has OAuth markers.
   useEffect(() => {
     const hash = window.location.hash;
-    // If Supabase handled it (hash cleared, session present), skip manual exchange.
+    const search = window.location.search;
+    const hasOAuthInUrl = (hash && (hash.includes("access_token") || hash.includes("code"))) ||
+                          (search && (search.includes("code=") || search.includes("access_token")));
+    if (!hasOAuthInUrl) return;
+
     const hasSession = !!localStorage.getItem("ben_ai_token");
-    if (!hash || !hash.includes("access_token") || hasSession) return;
-
-    const params = new URLSearchParams(hash.substring(1));
-    const accessToken = params.get("access_token");
-    if (!accessToken) return;
-
-    window.history.replaceState({}, "", window.location.pathname + window.location.search);
-    setOauthLoading(true);
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/auth/exchange`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ access_token: accessToken }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setError(data.detail || "OAuth login failed");
-          return;
-        }
-        saveSession(data);
-      } catch {
-        setError("Could not verify OAuth login — please try again.");
-      } finally {
-        setOauthLoading(false);
+    if (hash && hash.includes("access_token") && !hasSession) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get("access_token");
+      if (accessToken) {
+        window.history.replaceState({}, "", window.location.pathname + window.location.search);
+        setOauthLoading(true);
+        (async () => {
+          try {
+            const res = await fetch(`${API_BASE}/auth/exchange`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ access_token: accessToken }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              setError(data.detail || "OAuth login failed");
+              return;
+            }
+            saveSession(data);
+          } catch {
+            setError("Could not verify OAuth login — please try again.");
+          } finally {
+            setOauthLoading(false);
+          }
+        })();
       }
-    })();
+    }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function signup(emailInput, password) {
