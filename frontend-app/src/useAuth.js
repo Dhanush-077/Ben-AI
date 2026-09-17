@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabase";
 
-const API_BASE = "http://127.0.0.1:8000"; // production Render URL overrides via .env
+const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 // Handles signup, login, logout, and persisting the JWT token in localStorage.
 // Also handles OAuth redirect (extracts access_token from URL hash, exchanges it).
