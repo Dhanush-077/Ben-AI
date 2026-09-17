@@ -1081,7 +1081,9 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
         if lang_hind:
             return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nमैं Janakisetty Dhanush Babu हूँ — B.Tech CSE (3rd Year), PBR Visvodaya Institute. AI, computer vision, full-stack मैं passionate.\n\nContact: janakisettydhanushbabu333@gmail.com | +91-9012345678\n\nSkills: Python, Java, HTML, CSS, MySQL, ML, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack.\n\nProjects:\n- Virtual Keyboard & Air Mouse\n- Tropical Cloud Cluster Detection\n- Gesture Control Presenter\n\nYou can connect with him:\n[GitHub]() [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
         return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nI'm **Janakisetty Dhanush Babu** — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. I'm passionate about AI, computer vision, and full-stack development.\n\n**Contact:** janakisettydhanushbabu333@gmail.com | +91-9012345678\n\n**Skills:** Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack development.\n\n**Standout projects:**\n- Virtual Keyboard & Air Mouse System (Python, OpenCV, MediaPipe)\n- Tropical Cloud Cluster Detection model\n- Gesture Control Presenter\n\n**You can connect with him:**\n[GitHub]()\n[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty)\n[View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
-    models = ["gemini-3.6-flash", "gemini-2.5-pro", "gemini-2.5-flash-preview-tts"]
+    text_model = "gemini-3.5-flash-lite"
+    vision_model = "gemini-2.5-flash"
+    models = [vision_model if image_base64 else text_model, "gemini-2.5-pro", "gemini-2.5-flash-preview-tts"]
     seen=set(); uniq=[m for m in models if m and not (m in seen or seen.add(m))]
     for model in uniq:
         url=f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={os.environ.get('GEMINI_API_KEY','')}"
