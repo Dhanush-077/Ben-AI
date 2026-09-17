@@ -48,7 +48,7 @@ def greet(name): return f"hi {name}"
 
 Inline \`const x = 1\` stays inline.
 
-Links: [GitHub](https://github.com/Dhanush-077) and a table:
+Links: [GitHub]() and a table:
 
 | A | B |
 |---|---|
@@ -73,7 +73,7 @@ const checks = {
   "inline code rendered as <code> not <pre>":
     /<code[^>]*>\s*const x = 1/.test(html),
   "link has target=_blank":
-    /<a href="https:\/\/github\.com\/Dhanush-077"[^>]*target="_blank"/.test(html),
+    /<a href=""[^>]*target="_blank"/.test(html),
   "gfm table rendered":
     /<table>/.test(html),
 };

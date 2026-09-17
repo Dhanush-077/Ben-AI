@@ -30,7 +30,7 @@ const DEVELOPER = {
   location: "Kavali, Nellore District, Andhra Pradesh",
   email: "janakisettydhanushbabu333@gmail.com",
   phone: "+91 9059672119",
-  github: "https://github.com/Dhanush-077",
+  github: "",
   linkedin: "https://linkedin.com/in/dhanushbabujanakisetty",
   projects: [
     "Virtual Keyboard & Air Mouse System — Python, OpenCV, MediaPipe",
