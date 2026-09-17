@@ -1125,12 +1125,14 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
                     break  # try next model
             except Exception as e:
                 if any(k in str(e).lower() for k in ('quota','429','rate limit')): time.sleep(1*(2**attempt)); continue
-    # Groq fallback (free tier) when Gemini fully exhausted
+    # After 3 retries all failed: if image was attached, return friendly message.
+    if image_base64:
+        return ("Image analysis is temporarily unavailable because Gemini's vision service is busy. Please try again in a moment.", [])
+    # Groq fallback (free tier) — allowed ONLY for text-only (image_base64 is None).
     try:
         groq_key = os.environ.get("GROQ_API_KEY", "")
-        if image_base64:
-            # Groq does not support vision for this model — skip and tell user.
-            return ("Image analysis requires Gemini (vision-enabled). This message uses Groq, which doesn't support image input. Try again without an image, or wait for Gemini to become available.", [])
+        if not groq_key:
+            raise Exception("no groq key")
         groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
         if groq_key:
             url = "https://api.groq.com/openai/v1/chat/completions"
