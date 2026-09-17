@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "./supabase";
 
 const API_BASE = "http://127.0.0.1:8000"; // production Render URL overrides via .env
 
@@ -17,18 +18,65 @@ export function useAuth() {
     setEmail(data.email);
   }
 
-  // On mount: check for OAuth redirect (URL hash contains access_token).
+  // Restore Supabase session and listen to auth changes (OAuth callback fix).
+  useEffect(() => {
+    // On startup: restore session if URL contains OAuth hash.
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const user = session.user;
+        if (user?.email) {
+          saveSession({ token: session.access_token || session.refresh_token || "supabase", email: user.email });
+        }
+        // Remove hash after session created.
+        if (window.location.hash && window.location.hash.includes("access_token")) {
+          window.history.replaceState({}, "", window.location.pathname + window.location.search);
+          // Redirect to chat page when coming from OAuth.
+          if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/chat")) {
+            window.location.replace(window.location.origin + "/");
+          }
+        }
+      }
+    })();
+
+    // Listen to auth state changes (handles OAuth redirect + session refresh).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        const user = session.user;
+        if (user?.email) {
+          saveSession({ token: session.access_token || session.refresh_token || "supabase", email: user.email });
+        }
+        // Clear hash and redirect to chat.
+        if (window.location.hash && window.location.hash.includes("access_token")) {
+          window.history.replaceState({}, "", window.location.pathname + window.location.search);
+          if (window.location.pathname !== "/" && !window.location.pathname.startsWith("/chat")) {
+            window.location.replace(window.location.origin + "/");
+          }
+        }
+      }
+      if (event === "SIGNED_OUT") {
+        setToken(null);
+        setEmail("");
+        localStorage.removeItem("ben_ai_token");
+        localStorage.removeItem("ben_ai_email");
+      }
+    });
+
+    return () => subscription?.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // On mount: handle OAuth redirect with Supabase session (backward-compat).
   useEffect(() => {
     const hash = window.location.hash;
-    if (!hash || !hash.includes("access_token")) return;
+    // If Supabase handled it (hash cleared, session present), skip manual exchange.
+    const hasSession = !!localStorage.getItem("ben_ai_token");
+    if (!hash || !hash.includes("access_token") || hasSession) return;
 
     const params = new URLSearchParams(hash.substring(1));
     const accessToken = params.get("access_token");
     if (!accessToken) return;
 
-    // Clear the hash immediately so a page refresh doesn't re-trigger this.
     window.history.replaceState({}, "", window.location.pathname + window.location.search);
-
     setOauthLoading(true);
     (async () => {
       try {
