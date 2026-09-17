@@ -116,14 +116,6 @@ export default function DeveloperFooter() {
                 <Phone size={14} /> Call
               </a>
               <a
-                href={DEVELOPER.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white"
-              >
-                <GithubIcon /> GitHub
-              </a>
-              <a
                 href={DEVELOPER.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
