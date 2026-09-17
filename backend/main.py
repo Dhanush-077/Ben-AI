@@ -1101,7 +1101,15 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
                 for item in history_items:
                     pass  # history_items already built correctly above
                 # Build contents: previous messages + current user message
-                contents = history_items + [{"role":"user","parts":[{"text":str(user_message)}]}]
+                user_parts = [{"text": str(user_message)}]
+                if image_base64:
+                    user_parts.append({
+                        "inlineData": {
+                            "mimeType": image_media_type if image_media_type in ("image/jpeg","image/png","image/webp") else "image/jpeg",
+                            "data": image_base64,
+                        }
+                    })
+                contents = history_items + [{"role":"user","parts": user_parts}]
                 payload={"contents":contents,"system_instruction":{"parts":[{"text":"Be helpful and concise."}]},"generationConfig":{"temperature":0.7,"maxOutputTokens":2048}}
                 r=requests.post(url, headers={'Content-Type':'application/json'}, json=payload, timeout=60)
                 d=r.json()
@@ -1120,6 +1128,9 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
     # Groq fallback (free tier) when Gemini fully exhausted
     try:
         groq_key = os.environ.get("GROQ_API_KEY", "")
+        if image_base64:
+            # Groq does not support vision for this model — skip and tell user.
+            return ("Image analysis requires Gemini (vision-enabled). This message uses Groq, which doesn't support image input. Try again without an image, or wait for Gemini to become available.", [])
         groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
         if groq_key:
             url = "https://api.groq.com/openai/v1/chat/completions"
