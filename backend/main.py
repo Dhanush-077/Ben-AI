@@ -1138,14 +1138,13 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
         if lang_hind:
             return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nमैं Janakisetty Dhanush Babu हूँ — B.Tech CSE (3rd Year), PBR Visvodaya Institute. AI, computer vision, full-stack मैं passionate.\n\nContact: janakisettydhanushbabu333@gmail.com | +91-9012345678\n\nSkills: Python, Java, HTML, CSS, MySQL, ML, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack.\n\nProjects:\n- Virtual Keyboard & Air Mouse\n- Tropical Cloud Cluster Detection\n- Gesture Control Presenter\n\nYou can connect with him:\n[GitHub]() [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
         return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nI'm **Janakisetty Dhanush Babu** — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. I'm passionate about AI, computer vision, and full-stack development.\n\n**Contact:** janakisettydhanushbabu333@gmail.com | +91-9012345678\n\n**Skills:** Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack development.\n\n**Standout projects:**\n- Virtual Keyboard & Air Mouse System (Python, OpenCV, MediaPipe)\n- Tropical Cloud Cluster Detection model\n- Gesture Control Presenter\n\n**You can connect with him:**\n[GitHub]()\n[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty)\n[View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
-    # Model selection: use gemini-2.5-flash-lite as primary vision model,
-    # gemini-2.5-flash as fallback for 400/404, gemini-2.5-pro as third option
+    # Model selection: gemini-3.6-flash for image analysis (primary + fallback)
     # For text-only: gemini-3.5-flash-lite primary, gemini-2.5-pro fallback
     if image_base64:
         # Image analysis path - use vision models
-        vision_model_primary = "gemini-2.5-flash-lite"
-        vision_model_fallback = "gemini-2.5-flash"
-        vision_model_tertiary = "gemini-2.5-pro"
+        vision_model_primary = "gemini-3.6-flash"
+        vision_model_fallback = "gemini-3.6-flash"
+        vision_model_tertiary = "gemini-3.6-flash"
         models = [vision_model_primary, vision_model_fallback, vision_model_tertiary]
     else:
         # Text-only path - use text models
