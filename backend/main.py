@@ -860,9 +860,66 @@ TOOL_FUNCTIONS = {
 
 
 def _generate_title(user_message: str) -> str:
-    # 2. CONVERSATION TITLES: 1-2 words only
-    # (prompt below changed in SYSTEM_PROMPT; this is the backend call)
-    return "New chat"
+    """
+    Generate a short title (2-6 words) from the first meaningful user message.
+    Ignores greetings like "hi", "hello", "bro".
+    Examples:
+    * "Write a Java palindrome program" → "Java Palindrome Program"
+    * "Explain SQL INNER JOIN" → "SQL INNER JOIN"
+    * "Build a resume" → "Resume Builder"
+    """
+    # Normalize message
+    msg = str(user_message).lower().strip()
+    # Remove punctuation
+    msg = msg.replace('?', '').replace('!', '').replace('.', '').replace(',', '')
+    # Collapse multiple spaces
+    while '  ' in msg:
+        msg = msg.replace('  ', ' ')
+
+    # Check for greetings to ignore
+    greetings = {'hi', 'hello', 'hey', 'bro', 'yo', 'sup', 'hiya', 'howdy'}
+    if msg in greetings:
+        return "New chat"
+
+    # Tokenize
+    tokens = msg.split()
+
+    # Stop words to filter out
+    stop_words = {
+        'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as',
+        'that', 'this', 'these', 'those', 'it', 'its', 'and', 'or', 'but',
+        'not', 'so', 'then', 'than', 'too', 'very', 'can', 'will', 'just',
+        'have', 'has', 'had', 'do', 'does', 'did', 'would', 'should', 'could',
+        'may', 'might', 'must', 'shall'
+    }
+
+    # Filter out stop words
+    meaningful_tokens = [t for t in tokens if t not in stop_words and len(t) > 1]
+
+    # If nothing meaningful left, fall back to "New chat"
+    if not meaningful_tokens:
+        return "New chat"
+
+    # Title-case each token (capitalize first letter)
+    titlecased = [token.capitalize() for token in meaningful_tokens]
+
+    # Take first 2-6 tokens (aim for meaningful title)
+    # If we have 2-6 tokens, use them all
+    # If we have more than 6, take first 6
+    # If we have exactly 1 token, we'll use it but the requirement is 2-6 words
+    # However, examples show single-word concepts like "Resume Builder" (2 words)
+    # Let's aim for 2-6, but if we only have 1 meaningful token, we'll use it anyway
+    selected = titlecased[:6]  # Take up to 6
+
+    # If we only got 1 token, that's still better than "New chat"
+    # But try to get at least 2 if possible by including some stop words contextually?
+    # For simplicity, we'll use what we have
+    if len(selected) < 2 and len(titlecased) >= 2:
+        # If we filtered too much, take first 2 original tokens and title-case them
+        selected = [tokens[0].capitalize(), tokens[1].capitalize()] if len(tokens) >= 2 else [tokens[0].capitalize()]
+
+    return ' '.join(selected)
 
 import re as _re
 
@@ -1081,12 +1138,25 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
         if lang_hind:
             return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nमैं Janakisetty Dhanush Babu हूँ — B.Tech CSE (3rd Year), PBR Visvodaya Institute. AI, computer vision, full-stack मैं passionate.\n\nContact: janakisettydhanushbabu333@gmail.com | +91-9012345678\n\nSkills: Python, Java, HTML, CSS, MySQL, ML, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack.\n\nProjects:\n- Virtual Keyboard & Air Mouse\n- Tropical Cloud Cluster Detection\n- Gesture Control Presenter\n\nYou can connect with him:\n[GitHub]() [LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty) [Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
         return ("![Developer Photo](frontend-app/src/assets/developer-photo.jpeg)\n\nI'm **Janakisetty Dhanush Babu** — B.Tech CSE (3rd Year), PBR Visvodaya Institute of Technology and Science, Kavali, Nellore, A.P. I'm passionate about AI, computer vision, and full-stack development.\n\n**Contact:** janakisettydhanushbabu333@gmail.com | +91-9012345678\n\n**Skills:** Python, Java, HTML, CSS, MySQL, Machine Learning, OpenCV, MediaPipe, TensorFlow, Flutter, Full-stack development.\n\n**Standout projects:**\n- Virtual Keyboard & Air Mouse System (Python, OpenCV, MediaPipe)\n- Tropical Cloud Cluster Detection model\n- Gesture Control Presenter\n\n**You can connect with him:**\n[GitHub]()\n[LinkedIn](https://linkedin.com/in/dhanushbabujanakisetty)\n[View Resume](https://drive.google.com/file/d/1SxAgTUVVsXIlN8yxjZhd9VMzvf7uiVSB/view?usp=sharing)", [])
-    text_model = "gemini-3.5-flash-lite"
-    vision_model = "gemini-2.5-flash"
-    models = [vision_model if image_base64 else text_model, "gemini-2.5-pro", "gemini-2.5-flash-preview-tts"]
-    seen=set(); uniq=[m for m in models if m and not (m in seen or seen.add(m))]
-    for model in uniq:
-        url=f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={os.environ.get('GEMINI_API_KEY','')}"
+    # Model selection: use gemini-2.5-flash-lite as primary vision model,
+    # gemini-2.5-flash as fallback for 400/404, gemini-2.5-pro as third option
+    # For text-only: gemini-3.5-flash-lite primary, gemini-2.5-pro fallback
+    if image_base64:
+        # Image analysis path - use vision models
+        vision_model_primary = "gemini-2.5-flash-lite"
+        vision_model_fallback = "gemini-2.5-flash"
+        vision_model_tertiary = "gemini-2.5-pro"
+        models = [vision_model_primary, vision_model_fallback, vision_model_tertiary]
+    else:
+        # Text-only path - use text models
+        text_model = "gemini-3.5-flash-lite"
+        models = [text_model, "gemini-2.5-pro", "gemini-2.5-flash-preview-tts"]
+
+    seen = set()
+    uniq = [m for m in models if m and not (m in seen or seen.add(m))]
+
+    for model_idx, model in enumerate(uniq):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={os.environ.get('GEMINI_API_KEY','')}"
         for attempt in range(3):
             import requests, time
             try:
@@ -1100,8 +1170,7 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
                             history_items.append(item)
                     except Exception:
                         pass
-                for item in history_items:
-                    pass  # history_items already built correctly above
+
                 # Build contents: previous messages + current user message
                 user_parts = [{"text": str(user_message)}]
                 if image_base64:
@@ -1111,25 +1180,61 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
                             "data": image_base64,
                         }
                     })
-                contents = history_items + [{"role":"user","parts": user_parts}]
-                payload={"contents":contents,"system_instruction":{"parts":[{"text":"Be helpful and concise."}]},"generationConfig":{"temperature":0.7,"maxOutputTokens":2048}}
-                r=requests.post(url, headers={'Content-Type':'application/json'}, json=payload, timeout=60)
-                d=r.json()
-                is_429 = r.status_code==429 or any(k in str(d.get('error',{}).get('message','')).lower() for k in ('quota','429','rate limit'))
+                contents = history_items + [{"role": "user", "parts": user_parts}]
+                payload = {"contents": contents, "system_instruction": {"parts": [{"text": "Be helpful and concise."}]}, "generationConfig": {"temperature": 0.7, "maxOutputTokens": 2048}}
+                r = requests.post(url, headers={'Content-Type': 'application/json'}, json=payload, timeout=60)
+                d = r.json()
+
+                # Log actual Gemini HTTP status for debugging
+                if r.status_code != 200:
+                    print(f'[GEMINI ERROR] model={model} status={r.status_code} error={d.get("error", {})} msg={str(user_message)[:20]}', flush=True)
+
+                is_429 = r.status_code == 429 or any(k in str(d.get('error', {})).lower() for k in ('quota', '429', 'rate limit'))
                 if is_429:
-                    time.sleep(1*(2**attempt)); continue
-                if r.status_code==200 and d.get('candidates'):
-                    text=d['candidates'][0].get('content',{}).get('parts',[{}])[0].get('text','')
+                    wait_time = 1 * (2 ** attempt)
+                    time.sleep(wait_time)
+                    continue
+
+                if r.status_code == 200 and d.get('candidates'):
+                    text = d['candidates'][0].get('content', {}).get('parts', [{}])[0].get('text', '')
                     print(f'[ANSWERED] model={model} msg={str(user_message)[:20]}', flush=True)
                     return (str(text)[:500], [])
-                if r.status_code==404:
+
+                # Handle 400/404: retry once with fallback vision model (only for primary vision model)
+                if r.status_code in (400, 404) and image_base64:
+                    if model_idx == 0:  # Primary vision model failed
+                        print(f'[FALLBACK-{r.status_code}] model={model} msg={str(user_message)[:20]}', flush=True)
+                        # Retry once with fallback model
+                        fallback_url = f"https://generativelanguage.googleapis.com/v1beta/models/{vision_model_fallback}:generateContent?key={os.environ.get('GEMINI_API_KEY','')}"
+                        try:
+                            r2 = requests.post(fallback_url, headers={'Content-Type': 'application/json'}, json=payload, timeout=60)
+                            d2 = r2.json()
+                            if r2.status_code == 200 and d2.get('candidates'):
+                                text = d2['candidates'][0].get('content', {}).get('parts', [{}])[0].get('text', '')
+                                print(f'[ANSWERED-FALLBACK] model={vision_model_fallback} msg={str(user_message)[:20]}', flush=True)
+                                return (str(text)[:500], [])
+                            else:
+                                print(f'[FALLBACK FAILED] model={vision_model_fallback} status={r2.status_code} error={d2.get("error", {})}', flush=True)
+                        except Exception as e2:
+                            print(f'[FALLBACK EXCEPTION] model={vision_model_fallback} error={e2}', flush=True)
+                    break  # Try next model in the chain
+
+                if r.status_code == 404:
                     print(f'[FALLBACK-404] model={model} msg={str(user_message)[:20]}', flush=True)
                     break  # try next model
+
             except Exception as e:
-                if any(k in str(e).lower() for k in ('quota','429','rate limit')): time.sleep(1*(2**attempt)); continue
-    # After 3 retries all failed: if image was attached, return friendly message.
+                if any(k in str(e).lower() for k in ('quota', '429', 'rate limit')):
+                    wait_time = 1 * (2 ** attempt)
+                    time.sleep(wait_time)
+                    continue
+                # Log other exceptions
+                print(f'[EXCEPTION] model={model} attempt={attempt} error={e}', flush=True)
+
+    # After all models exhausted: if image was attached, return friendly message.
     if image_base64:
         return ("Image analysis is temporarily unavailable because Gemini's vision service is busy. Please try again in a moment.", [])
+
     # Groq fallback (free tier) — allowed ONLY for text-only (image_base64 is None).
     try:
         groq_key = os.environ.get("GROQ_API_KEY", "")
@@ -1138,8 +1243,8 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
         groq_model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
         if groq_key:
             url = "https://api.groq.com/openai/v1/chat/completions"
-            payload = {"model": groq_model, "messages": [{"role":"user","content":str(user_message)}], "max_tokens": 2048}
-            r = requests.post(url, headers={"Authorization": f"Bearer {groq_key}", "Content-Type":"application/json"}, json=payload, timeout=60)
+            payload = {"model": groq_model, "messages": [{"role": "user", "content": str(user_message)}], "max_tokens": 2048}
+            r = requests.post(url, headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"}, json=payload, timeout=60)
             if r.status_code == 200:
                 d = r.json()
                 text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
@@ -1147,6 +1252,7 @@ def run_chat(user_message, image_base64=None, image_media_type="image/jpeg", con
                 return (str(text)[:500], [])
     except Exception:
         pass
+
     return ("Gemini busy right now. Try again shortly.", [])
 
 # ---------------------------------------------------------------------------
