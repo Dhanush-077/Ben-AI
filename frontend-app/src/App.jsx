@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu, X } from "lucide-react";
+import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu, X, ArrowRight, Check, Sparkles, Users, Zap, Shield, Globe, BarChart3, Code2, MessageSquare, Heart } from "lucide-react";
 import { useAuth } from "./useAuth";
 import { useChatSession } from "./useChatSession";
 import { useTheme } from "./useTheme";
@@ -29,6 +29,7 @@ export default function App() {
       return { displayName: cached.displayName || "", avatarUrl: cached.avatarUrl || "" };
     } catch { return { displayName: "", avatarUrl: "" }; }
   }); // Issue 7
+  const [authModalOpen, setAuthModalOpen] = useState(true); // Controls landing-page auth modal
   const toastTimer = useRef(null);
   const scrollRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -119,8 +120,33 @@ export default function App() {
     await copyMessage(text);
   }
 
+  // Pre-login flow: premium landing page with working auth modal (Option B)
   if (!auth.isLoggedIn) {
-    return <Login auth={auth} />;
+    return (
+      <>
+        <LandingPage
+          onGetStarted={() => setAuthModalOpen(true)}
+          onLogin={() => setAuthModalOpen(true)}
+        />
+
+        {authModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0B0C0E]/80 backdrop-blur-md">
+            <div className="relative w-full max-w-md">
+              <button
+                onClick={() => setAuthModalOpen(false)}
+                aria-label="Close authentication"
+                className="absolute -top-10 right-0 p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors z-10"
+              >
+                <X size={22} />
+              </button>
+              <div className="bg-[#F4F3EF] dark:bg-[#0B0C0E] rounded-2xl p-6 shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
+                <Login auth={auth} />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   // Show a loading screen while the OAuth token exchange completes (Issue 1).
@@ -474,6 +500,128 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ------------------------------------------------------------------
+// Premium landing page — black hero, teal accent, Notion/Squarespace
+// style typography, feature ticker, CTA sections
+// ------------------------------------------------------------------
+function LandingPage({ onGetStarted, onLogin }) {
+  return (
+    <div className="min-h-screen bg-[#0B0C0E] text-[#F4F3EF] overflow-x-hidden">
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-6 lg:px-12 py-5 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[#4FD1C5] flex items-center justify-center">
+            <span className="text-sm font-extrabold text-[#0B0C0E]">B</span>
+          </div>
+          <span className="font-semibold text-lg tracking-tight">Ben AI</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={onLogin} className="text-sm text-stone-400 hover:text-white transition-colors">Log in</button>
+          <button onClick={onGetStarted} className="text-sm font-medium bg-[#4FD1C5] text-[#0B0C0E] px-5 py-2 rounded-full hover:bg-[#3BB8AD] transition-colors">Get Started</button>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="px-6 lg:px-12 pt-20 pb-16 max-w-4xl mx-auto text-center">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#4FD1C5] mb-4">AI-Powered Assistant</p>
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] mb-6">
+          Your smartest
+          <span className="block text-[#4FD1C5]">conversation partner</span>
+        </h1>
+        <p className="text-lg text-stone-400 max-w-2xl mx-auto leading-relaxed mb-8">
+          Ask anything. Get instant answers with image understanding, real-time research, and deep reasoning — all in one chat.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={onGetStarted} className="font-medium bg-[#4FD1C5] text-[#0B0C0E] px-7 py-3 rounded-full hover:bg-[#3BB8AD] transition-colors text-sm">
+            Start chatting — free
+          </button>
+          <button onClick={onLogin} className="font-medium border border-white/20 px-7 py-3 rounded-full hover:bg-white/5 transition-colors text-sm">
+            Log in
+          </button>
+        </div>
+        <p className="text-xs text-stone-500 mt-4">No credit card required. Google, GitHub, or email sign-in.</p>
+      </section>
+
+      {/* Feature ticker */}
+      <div className="border-t border-white/10 border-b border-white/10 py-5 overflow-hidden">
+        <div className="flex items-center gap-8 px-6 lg:px-12 max-w-5xl mx-auto text-sm text-stone-500">
+          <span className="flex items-center gap-2"><Zap size={14} className="text-[#4FD1C5]" /> Instant responses</span>
+          <span className="flex items-center gap-2"><Image size={14} className="text-[#4FD1C5]" /> Image upload & OCR</span>
+          <span className="flex items-center gap-2"><Globe size={14} className="text-[#4FD1C5]" /> Live research</span>
+          <span className="flex items-center gap-2"><Code2 size={14} className="text-[#4FD1C5]" /> Coding help</span>
+          <span className="flex items-center gap-2"><Shield size={14} className="text-[#4FD1C5]" /> Secure & private</span>
+        </div>
+      </div>
+
+      {/* Editorial — What is Ben AI */}
+      <section className="px-6 lg:px-12 pt-20 pb-16 max-w-3xl mx-auto">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#4FD1C5] mb-4">What is Ben AI</p>
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight mb-6">
+          A chat interface that actually thinks
+        </h2>
+        <div className="space-y-4 text-stone-400 leading-relaxed">
+          <p>Ben AI combines multiple AI providers — Gemini and Groq — to give you fast, accurate answers. Ask about code, current events, stock prices, or anything else and get a real reply, not a recycled one.</p>
+          <p>Upload images and get OCR-powered answers. Keep your conversation history across sessions. Your data stays yours.</p>
+        </div>
+      </section>
+
+      {/* Features grid */}
+      <section className="px-6 lg:px-12 pb-20 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { icon: MessageSquare, title: "Smart chat", desc: "Natural, contextual replies with memory of your conversation." },
+            { icon: ImageIcon, title: "Image understanding", desc: "Upload screenshots or photos — Ben reads and explains them." },
+            { icon: Globe, title: "Live research", desc: "Search the web for current events, scores, and stock prices." },
+            { icon: Code2, title: "Coding help", desc: "Debug, write, and review code across any language." },
+            { icon: BarChart3, title: "Stock prices", desc: "Get real-time market data without leaving the chat." },
+            { icon: Heart, title: "Always improving", desc: "Multiple AI providers with automatic fallback for reliability." },
+          ].map((f) => (
+            <div key={f.title} className="border border-white/10 rounded-xl p-6 hover:border-[#4FD1C5]/40 transition-colors group">
+              <f.icon size={20} className="text-[#4FD1C5] mb-4" />
+              <h3 className="font-semibold text-sm mb-2 group-hover:text-[#4FD1C5] transition-colors">{f.title}</h3>
+              <p className="text-sm text-stone-500 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="px-6 lg:px-12 pb-20 max-w-3xl mx-auto">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#4FD1C5] mb-4">Who it's for</p>
+        <h2 className="text-3xl font-bold tracking-tight mb-6">Everyone</h2>
+        <ul className="space-y-3 text-stone-400">
+          {[
+            "Developers who want a pair-programming buddy",
+            "Students who need explanations, not just answers",
+            "Researchers who want live web results",
+            "Teams who need fast, reliable AI without setup",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3">
+              <Check size={18} className="text-[#4FD1C5] mt-0.5 shrink-0" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Final CTA */}
+      <section className="border-t border-white/10 px-6 lg:px-12 py-16 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Ready to start?</h2>
+        <p className="text-stone-400 mb-8 max-w-sm mx-auto">Join thousands of users having better conversations with Ben AI.</p>
+        <button onClick={onGetStarted} className="font-medium bg-[#4FD1C5] text-[#0B0C0E] px-8 py-3 rounded-full hover:bg-[#3BB8AD] transition-colors text-sm">
+          Get started free
+        </button>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 px-6 lg:px-12 py-6 flex items-center justify-between text-xs text-stone-500">
+        <span>Ben AI</span>
+        <span>Powered by Gemini & Groq</span>
+      </footer>
     </div>
   );
 }
