@@ -560,13 +560,13 @@ function LandingPage({ onGetStarted, onLogin }) {
           style={{ animation: "marquee 18s linear infinite" }}
         >
           {[...Array(2)].map((_, i) => (
-            <React.Fragment key={i}>
-              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
-              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload & OCR</span>
-              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
-              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
-              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure & private</span>
-            </React.Fragment>
+            <span key={i}>
+              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
+              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload & OCR</span>
+              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
+              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
+              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure & private</span>
+            </span>
           ))}
         </div>
       </div>
