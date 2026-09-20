@@ -170,3 +170,7 @@ button:focus-visible, .button:focus-visible, [role="button"]:focus-visible {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-reduce\:\[animation\:none\] { animation: none !important; }
+}

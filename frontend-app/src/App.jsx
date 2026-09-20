@@ -553,21 +553,26 @@ function LandingPage({ onGetStarted, onLogin }) {
         <p className="text-xs text-stone-500 mt-4">No credit card required. Google, GitHub, or email sign-in.</p>
       </section>
 
-      {/* Feature ticker — infinite marquee */}
-      <div className="border-t border-white/10 border-b border-white/10 py-6 overflow-hidden group relative" aria-label="Feature highlights">
+      {/* Feature ticker — premium continuous marquee */}
+      <div className="border-t border-white/10 border-b border-white/10 py-6 overflow-hidden relative" aria-label="Feature highlights">
         <div
-          className="flex items-center gap-16 whitespace-nowrap w-max animate-marquee hover:[animation-play-state:paused] motion-reduce:[animation: none]"
-          style={{ animation: "marquee 18s linear infinite" }}
+          className="flex items-center whitespace-nowrap group hover:[animation-play-state:paused] motion-reduce:[animation:none]"
+          style={{ animation: "marquee 22s linear infinite" }}
         >
-          {[...Array(2)].map((_, i) => (
-            <span key={i}>
-              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
-              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload & OCR</span>
-              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
-              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
-              <span className="inline-flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure & private</span>
-            </span>
-          ))}
+          <div className="flex items-center gap-[80px] px-[60px]">
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload &amp; OCR</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure &amp; private</span>
+          </div>
+          <div className="flex items-center gap-[80px] px-[60px]">
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload &amp; OCR</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
+            <span className="inline-flex items-center gap-3 text-sm text-stone-300 font-medium tracking-wide shrink-0"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure &amp; private</span>
+          </div>
         </div>
       </div>
 
