@@ -39,10 +39,11 @@ chosen for speed of setup, not for scale.
   platforms wipe local disk on deploy, deleting all users/history. Supabase
   provides hosted Postgres **and** built-in email/password auth in one free
   service, replacing hand-rolled JWT/bcrypt code.
-- **OpenRouter instead of Anthropic now** — chat generation goes through
-  OpenRouter's OpenAI-compatible API (`google/gemini-2.5-flash-lite` by
-  default, automatically falling back to other currently-free models when a
-  provider is down/rate-limited). Removes any single-vendor billing/dependency.
+- **Anthropic Claude as primary model** — chat generation uses direct
+  Anthropic Claude API (`claude-3-5-sonnet-20241022`) via `ANTHROPIC_API_KEY` with
+  native tool-calling for news, stocks, sports, images, and general knowledge.
+  Provides fast responses, reliable multilingual support (Telugu, Hindi, Tamil),
+  and strong general knowledge accuracy without free-tier rate limits.
 - **Two Supabase clients in `backend/main.py`** — `supabase` is used *only*
   for auth; `db` (service_role) is used *only* for data + storage. This is
   deliberate: `sign_in_with_password` attaches the logged-in user's session
@@ -53,7 +54,7 @@ chosen for speed of setup, not for scale.
 
 ## Tech stack (current)
 - Backend: FastAPI (Python), Supabase (Postgres + Auth + Storage),
-  OpenRouter (OpenAI-compatible chat completions, free-tier model + fallback)
+  Anthropic Claude API (direct native tool-calling with `claude-3-5-sonnet-20241022`)
 - Frontend: React 19 + Vite (`frontend-app/`), Tailwind **v4**
   (via `@tailwindcss/vite` — **no `tailwind.config.js`**; dark mode is
   `@custom-variant dark (&:where(.dark, .dark *));` in `src/index.css`),

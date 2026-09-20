@@ -130,16 +130,16 @@ export default function App() {
         />
 
         {authModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0B0C0E]/80 backdrop-blur-md">
-            <div className="relative w-full max-w-md">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#0B0C0E]/70 backdrop-blur-md">
+            <div className="relative w-full max-w-md bg-white/10 dark:bg-[#0B0C0E]/80 backdrop-blur-xl rounded-3xl p-6 shadow-2xl ring-1 ring-white/20">
               <button
                 onClick={() => setAuthModalOpen(false)}
                 aria-label="Close authentication"
-                className="absolute -top-10 right-0 p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors z-10"
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 flex items-center justify-center shadow-lg hover:scale-105 transition-transform z-10"
               >
-                <X size={22} />
+                <X size={16} />
               </button>
-              <div className="bg-[#F4F3EF] dark:bg-[#0B0C0E] rounded-2xl p-6 shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
+              <div className="w-full max-w-sm bg-[#F4F3EF]/95 dark:bg-[#0B0C0E]/95 backdrop-blur-xl rounded-2xl shadow-2xl ring-1 ring-white/10 p-6">
                 <Login auth={auth} />
               </div>
             </div>

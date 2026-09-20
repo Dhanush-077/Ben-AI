@@ -32,8 +32,8 @@ export default function Login({ auth }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 dark:bg-stone-950 px-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white dark:bg-stone-900 rounded-xl shadow-sm p-6">
+    <div className="w-full max-w-sm">
+      <form onSubmit={handleSubmit} className="w-full bg-[#F4F3EF] dark:bg-[#0B0C0E] rounded-2xl shadow-xl ring-1 ring-white/10 p-6">
         <div className="w-12 h-12 rounded-xl bg-[#0B0C0E] dark:bg-[#F4F3EF] flex items-center justify-center mb-4">
           <span className="text-xl font-extrabold text-[#F4F3EF] dark:text-[#0B0C0E]">B</span>
         </div>

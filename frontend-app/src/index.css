@@ -8,10 +8,35 @@
  */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Design tokens — premium open-source / Notion / Squarespace style */
+:root {
+  --ink: #0B0C0E;
+  --paper: #F4F3EF;
+  --teal: #4FD1C5;
+  --stone-600: #57534E;
+  --stone-400: #A8A29E;
+  --stone-200: #E7E5E4;
+  --stone-50: #FAFAF9;
+}
+
+/* When the "dark" class is on <html>, switch the palette */
+html.dark {
+  --ink: #F4F3EF;
+  --paper: #0B0C0E;
+  --teal: #4FD1C5;
+  --stone-600: #A8A29E;
+  --stone-400: #57534E;
+  --stone-200: #1E1E1E;
+  --stone-50: #161617;
+}
+
 body {
   margin: 0;
+  font-family: "Inter", -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 #root {
@@ -60,7 +85,7 @@ body {
   margin: 0.2rem 0;
 }
 .markdown a {
-  color: #0d9488; /* teal-600 — matches the single-accent design */
+  color: #0d9488; /* teal-600 */
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -114,4 +139,29 @@ body {
 }
 .markdown th {
   font-weight: 600;
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fade-in 150ms ease-out forwards; }
+.fade-in { animation: fade-in 150ms ease-out forwards; }
+.slide-up { animation: slide-up 150ms ease-out forwards; }
+
+/* Smooth transition on interactive elements */
+button, .button, [role="button"] {
+  transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+button:hover:not(:disabled), .button:hover:not(:disabled), [role="button"]:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+button:focus-visible, .button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
 }
