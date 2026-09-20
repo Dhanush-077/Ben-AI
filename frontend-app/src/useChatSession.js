@@ -57,6 +57,11 @@ export function useChatSession(token, API_BASE) {
       setLoading(false);
       return;
     }
+    // Persist active conversation ID across refreshes.
+    const savedId = localStorage.getItem("ben_ai_active_conv");
+    if (savedId) {
+      setCurrentId(savedId);
+    }
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -67,7 +72,19 @@ export function useChatSession(token, API_BASE) {
         if (cancelled) return;
         setConversations(data.conversations || []);
 
-        // Always create a new conversation so the chat starts fresh.
+        // Reopen saved conversation instead of forcing new.
+        const savedId = localStorage.getItem("ben_ai_active_conv");
+        if (savedId) {
+          const cres = await fetch(`${API_BASE}/history?conversation_id=${savedId}`, { headers: authHeaders });
+          const cdata = await cres.json();
+          if (!cancelled) {
+            setCurrentId(savedId);
+            setMessages(cdata.messages || []);
+            setLoading(false);
+          }
+          return;
+        }
+        // Only create new when no saved conversation exists.
         const cres = await fetch(`${API_BASE}/conversations`, {
           method: "POST",
           headers: authHeaders,
@@ -97,6 +114,7 @@ export function useChatSession(token, API_BASE) {
     const data = await res.json();
     setCurrentId(data.conversation_id);
     setMessages([]);
+    localStorage.setItem("ben_ai_active_conv", data.conversation_id);
     await loadConversations();
     return data.conversation_id;
   }
@@ -104,6 +122,7 @@ export function useChatSession(token, API_BASE) {
   async function openConversation(id) {
     if (!token || id === currentId) return;
     setCurrentId(id);
+    localStorage.setItem("ben_ai_active_conv", id);
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/history?conversation_id=${id}`, { headers: authHeaders });

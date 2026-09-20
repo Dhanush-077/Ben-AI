@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu, X, ArrowRight, Check, Sparkles, Users, Zap, Shield, Globe, BarChart3, Code2, MessageSquare, Heart } from "lucide-react";
+import { Mic, Image as ImageIcon, Send, Sun, Moon, Copy, Share2, Menu, X, ArrowRight, Check, Sparkles, Users, Zap, Shield, Globe, BarChart3, Code2, MessageSquare, Heart, Mail, FileText } from "lucide-react";
 import { useAuth } from "./useAuth";
 import { useChatSession } from "./useChatSession";
 import { useTheme } from "./useTheme";
@@ -29,7 +29,14 @@ export default function App() {
       return { displayName: cached.displayName || "", avatarUrl: cached.avatarUrl || "" };
     } catch { return { displayName: "", avatarUrl: "" }; }
   }); // Issue 7
-  const [authModalOpen, setAuthModalOpen] = useState(true); // Controls landing-page auth modal
+  // Close auth modal on logout; landing page shows with modal hidden.
+  useEffect(() => {
+    if (!auth.token && authModalOpen) {
+      setAuthModalOpen(false);
+    }
+  }, [auth.token]);
+
+  const [authModalOpen, setAuthModalOpen] = useState(false); // Modal starts closed; open only via Get Started / Log in
   const toastTimer = useRef(null);
   const scrollRef = useRef(null);
   const imageInputRef = useRef(null);
@@ -546,14 +553,21 @@ function LandingPage({ onGetStarted, onLogin }) {
         <p className="text-xs text-stone-500 mt-4">No credit card required. Google, GitHub, or email sign-in.</p>
       </section>
 
-      {/* Feature ticker */}
-      <div className="border-t border-white/10 border-b border-white/10 py-5 overflow-hidden">
-        <div className="flex items-center gap-8 px-6 lg:px-12 max-w-5xl mx-auto text-sm text-stone-500">
-          <span className="flex items-center gap-2"><Zap size={14} className="text-[#4FD1C5]" /> Instant responses</span>
-          <span className="flex items-center gap-2"><ImageIcon size={14} className="text-[#4FD1C5]" /> Image upload & OCR</span>
-          <span className="flex items-center gap-2"><Globe size={14} className="text-[#4FD1C5]" /> Live research</span>
-          <span className="flex items-center gap-2"><Code2 size={14} className="text-[#4FD1C5]" /> Coding help</span>
-          <span className="flex items-center gap-2"><Shield size={14} className="text-[#4FD1C5]" /> Secure & private</span>
+      {/* Feature ticker — infinite marquee */}
+      <div className="border-t border-white/10 border-b border-white/10 py-6 overflow-hidden group relative" aria-label="Feature highlights">
+        <div
+          className="flex items-center gap-16 whitespace-nowrap w-max animate-marquee hover:[animation-play-state:paused] motion-reduce:[animation: none]"
+          style={{ animation: "marquee 18s linear infinite" }}
+        >
+          {[...Array(2)].map((_, i) => (
+            <React.Fragment key={i}>
+              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Zap size={16} className="text-[#4FD1C5] shrink-0" /> Instant responses</span>
+              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><ImageIcon size={16} className="text-[#4FD1C5] shrink-0" /> Image upload & OCR</span>
+              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Globe size={16} className="text-[#4FD1C5] shrink-0" /> Live research</span>
+              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Code2 size={16} className="text-[#4FD1C5] shrink-0" /> Coding help</span>
+              <span className="flex items-center gap-3 text-sm text-stone-400 font-medium tracking-wide"><Shield size={16} className="text-[#4FD1C5] shrink-0" /> Secure & private</span>
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
@@ -608,6 +622,32 @@ function LandingPage({ onGetStarted, onLogin }) {
         </ul>
       </section>
 
+      {/* About the Developer — glassmorphism */}
+      <section className="border-t border-white/10 px-6 lg:px-12 py-16 max-w-3xl mx-auto">
+        <div className="bg-white/5 dark:bg-white/[0.03] backdrop-blur-md rounded-3xl border border-white/10 p-8 lg:p-10 shadow-xl ring-1 ring-white/5">
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#4FD1C5] mb-3">About the Developer</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Janakisetty Dhanush Babu</h2>
+          <p className="text-sm text-stone-400 mb-4 font-medium">B.Tech CSE Student | AI & Full-Stack Developer</p>
+          <div className="prose prose-invert text-stone-300 text-sm leading-relaxed mb-6 max-w-xl">
+            <p>Passionate about AI, computer vision, full-stack development, and building practical products that solve real-world problems.</p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-sm text-stone-400 mb-6">
+            <span className="inline-flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1 text-xs">Kavali, Nellore, Andhra Pradesh, India</span>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a href="mailto:janakisettydhanushbabu333@gmail.com" className="inline-flex items-center gap-2 bg-[#0B0C0E] hover:bg-[#4FD1C5] hover:text-[#0B0C0E] text-[#F4F3EF] px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <Mail size={16} /> janakisettydhanushbabu333@gmail.com
+            </a>
+            <a href="https://linkedin.com/in/dhanushbabujanakisetty" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white/10 hover:bg-[#4FD1C5] hover:text-[#0B0C0E] text-[#F4F3EF] px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-current text-[10px] font-bold">in</span> LinkedIn
+            </a>
+            <a href="#" className="inline-flex items-center gap-2 bg-white/10 hover:bg-[#4FD1C5] hover:text-[#0B0C0E] text-[#F4F3EF] px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+              <FileText size={16} /> Resume
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="border-t border-white/10 px-6 lg:px-12 py-16 text-center">
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">Ready to start?</h2>
@@ -620,7 +660,7 @@ function LandingPage({ onGetStarted, onLogin }) {
       {/* Footer */}
       <footer className="border-t border-white/10 px-6 lg:px-12 py-6 flex items-center justify-between text-xs text-stone-500">
         <span>Ben AI</span>
-        <span>Powered by Gemini & Groq</span>
+        <span>Built with care — open source</span>
       </footer>
     </div>
   );

@@ -133,6 +133,7 @@ export function useAuth() {
   function logout() {
     localStorage.removeItem("ben_ai_token");
     localStorage.removeItem("ben_ai_email");
+    localStorage.removeItem("ben_ai_active_conv");
     setToken(null);
     setEmail("");
   }
