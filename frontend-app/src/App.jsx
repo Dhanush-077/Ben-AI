@@ -550,7 +550,7 @@ function LandingPage({ onGetStarted, onLogin }) {
       <div className="border-t border-white/10 border-b border-white/10 py-5 overflow-hidden">
         <div className="flex items-center gap-8 px-6 lg:px-12 max-w-5xl mx-auto text-sm text-stone-500">
           <span className="flex items-center gap-2"><Zap size={14} className="text-[#4FD1C5]" /> Instant responses</span>
-          <span className="flex items-center gap-2"><Image size={14} className="text-[#4FD1C5]" /> Image upload & OCR</span>
+          <span className="flex items-center gap-2"><ImageIcon size={14} className="text-[#4FD1C5]" /> Image upload & OCR</span>
           <span className="flex items-center gap-2"><Globe size={14} className="text-[#4FD1C5]" /> Live research</span>
           <span className="flex items-center gap-2"><Code2 size={14} className="text-[#4FD1C5]" /> Coding help</span>
           <span className="flex items-center gap-2"><Shield size={14} className="text-[#4FD1C5]" /> Secure & private</span>
